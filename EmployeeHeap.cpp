@@ -1,13 +1,5 @@
 #include "EmployeeHeap.h"
 
-EmployeeHeap::EmployeeHeap() {
-    
-}
-
-EmployeeHeap::~EmployeeHeap() {
-    
-}
-
 void EmployeeHeap::Insert(EmployeeData* data) {
     
 }

@@ -1,13 +1,5 @@
 #include "BpTree.h"
 
-BpTree::BpTree(ofstream* fout, int order) {
-	
-}
-
-BpTree::~BpTree() {
-
-}
-
 bool BpTree::Insert(EmployeeData* newData) {
 	
 }

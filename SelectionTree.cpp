@@ -1,13 +1,5 @@
 #include "SelectionTree.h"
 
-SelectionTree::SelectionTree(ofstream* fout) {
-    
-}
-
-SelectionTree::~SelectionTree() {
-
-}
-
 void SelectionTree::setTree() {
     
 }
