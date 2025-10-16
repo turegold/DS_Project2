@@ -1,3 +1,4 @@
+#pragma once
 #ifndef _BPTREEINDEXNODE_H_
 #define _BPTREEINDEXNODE_H_
 

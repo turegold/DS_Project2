@@ -15,8 +15,12 @@
 ## Update Notes  
 
 2025.10.13 (Version 2)
-구현 조건 '메모리 누수 시 10% 감점' 삭제
+- 구현 조건 '메모리 누수 시 10% 감점' 삭제
 
+2025.10.16 (Version 3)
+- 각 명령어 구현 조건 일부 변경 (제안서 변경)
+- Skeleton Code 오류 일부 수정
+- command.txt, employee.txt 예시 파일 추가
 ---
 
 ## How to Clone Repository  

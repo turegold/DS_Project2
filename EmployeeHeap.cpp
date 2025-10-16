@@ -1,3 +1,4 @@
+#pragma once
 #include "EmployeeHeap.h"
 
 void EmployeeHeap::Insert(EmployeeData* data) {

@@ -1,3 +1,4 @@
+#pragma once
 #include "EmployeeData.h"
 #include "EmployeeHeap.h"
 
@@ -29,7 +30,7 @@ public:
     void setParent(SelectionTreeNode* pP) { this->pParent = pP; }
     void setHeap(EmployeeHeap* pHR) { this->hRoot = pHR; }
 
-    EmployeeData* getBookData() { return pData; }
+    EmployeeData* getEmployeeData() { return pData; }
     SelectionTreeNode* getLeftChild() { return pLeft; }
     SelectionTreeNode* getRightChild() { return pRight; }
     SelectionTreeNode* getParent() { return pParent; }

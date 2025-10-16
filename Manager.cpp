@@ -1,13 +1,5 @@
 #include "Manager.h"
 
-Manager::Manager(int bpOrder) {
-
-}
-
-Manager::~Manager() {
-
-}
-
 void Manager::run(const char* command) {
 
 }
@@ -46,4 +38,16 @@ void Manager::PRINT_ST() {
 
 void Manager::DELETE() {
 
+}
+
+void Manager::printErrorCode(int n) {
+	flog << "========ERROR========\n";
+	flog << n << "\n";
+	flog << "=====================\n\n";
+}
+
+void Manager::printSuccessCode(string success) {
+	flog << "========" << success << "========\n";
+	flog << "Success" << "\n";
+	flog << "====================\n\n";
 }

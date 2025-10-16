@@ -1,3 +1,4 @@
+#pragma once
 #ifndef _BpTreeDataNode_H_
 #define _BpTreeDataNode_H_
 
