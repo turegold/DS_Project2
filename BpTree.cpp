@@ -23,3 +23,7 @@ void BpTree::splitIndexNode(BpTreeNode* pIndexNode) {
 BpTreeNode* BpTree::searchDataNode(string name) {
 	
 }
+
+void BpTree::searchRange(string start, string end) {
+    
+}
