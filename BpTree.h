@@ -35,7 +35,7 @@ public:
 	void splitIndexNode(BpTreeNode *pIndexNode);
 	BpTreeNode *getRoot() { return root; }
 	BpTreeNode *searchDataNode(string name);
-	void searchRange(string start, string end);
+	vector<EmployeeData *> searchRange(string start, string end);
 };
 
 #endif

@@ -95,97 +95,26 @@ bool BpTree::excessIndexNode(BpTreeNode *pIndexNode)
     }
 }
 
-void BpTree::splitDataNode(BpTreeNode *pDataNode)
-{
-    if (!pDataNode)
-    {
-        return;
-    }
-    auto leftMap = pDataNode->getDataMap();
-    if (!leftMap)
-    {
-        return;
-    }
-
-    // 새 오른쪽 리프 노드 생성
-    BpTreeDataNode *rightNode = new BpTreeDataNode();
-
-    // 데이터 개수 절반 계산
-    int total = leftMap->size();
-    int moveCount = total / 2; // 절반 오른쪽으로 이동
-    vector<pair<string, EmployeeData *>> temp;
-
-    // 뒤쪽 moveCount개를 오른쪽 노드로 옮기기 위해 저장
-    for (auto it = leftMap->rbegin(); it != leftMap->rend() && (int)temp.size() < moveCount; it++)
-    {
-        temp.push_back({it->first, it->second});
-    }
-
-    // 이동: 오른쪽 노드에 추가하고, 왼쪽에서 삭제
-    for (auto &kv : temp)
-    {
-        rightNode->insertDataMap(kv.first, kv.second);
-        leftMap->erase(kv.first);
-    }
-
-    // 리프 간 next / prev 연결
-    rightNode->setNext(pDataNode->getNext());
-    if (pDataNode->getNext())
-    {
-        pDataNode->getNext()->setPrev(rightNode);
-    }
-    rightNode->setPrev(pDataNode);
-    pDataNode->setNext(rightNode);
-
-    // 오른쪽 리프의 첫 번째 key를 승격 키로 설정
-    string promoteKey = rightNode->getDataMap()->begin()->first;
-
-    // 부모 인덱스 노드 처리
-    BpTreeNode *parent = pDataNode->getParent();
-    if (!parent)
-    {
-        // 부모가 없으면 새 루트 인덱스 노드 생성
-        BpTreeIndexNode *newRoot = new BpTreeIndexNode();
-        newRoot->setMostLeftChild(pDataNode);
-
-        // 오른쪽 리프를 승격키로 연결
-        newRoot->insertIndexMap(promoteKey, rightNode);
-        pDataNode->setParent(newRoot);
-        rightNode->setParent(newRoot);
-
-        // 루트 갱신
-        root = newRoot;
-    }
-    else
-    {
-        // 기존 부모가 있다면 부모의 map에 승격 키 추가
-        parent->insertIndexMap(promoteKey, rightNode);
-        rightNode->setParent(parent);
-
-        // 부모도 꽉 찼으면 인덱스 분할
-        if (excessIndexNode(parent))
-        {
-            splitIndexNode(parent);
-        }
-    }
-}
-
 void BpTree::splitIndexNode(BpTreeNode *pIndexNode)
 {
     if (!pIndexNode)
         return;
+
     auto leftMap = pIndexNode->getIndexMap();
     if (!leftMap)
         return;
 
     BpTreeIndexNode *rightIndex = new BpTreeIndexNode();
 
-    int total = leftMap->size();
+    int total = (int)leftMap->size();
     vector<pair<string, BpTreeNode *>> vec(leftMap->begin(), leftMap->end());
     int midIdx = total / 2;
     string promoteKey = vec[midIdx].first;
 
-    // 오른쪽 노드에 midIdx 이후의 데이터 이동
+    // ✅ 오른쪽 인덱스 노드의 mostLeftChild는 승격키의 "오른쪽 child"
+    rightIndex->setMostLeftChild(vec[midIdx].second);
+
+    // 오른쪽 노드로 midIdx+1 ~ end 이동
     for (int i = midIdx + 1; i < total; i++)
     {
         rightIndex->insertIndexMap(vec[i].first, vec[i].second);
@@ -193,15 +122,14 @@ void BpTree::splitIndexNode(BpTreeNode *pIndexNode)
         leftMap->erase(vec[i].first);
     }
 
-    // promoteKey는 부모로 올리기 전에 삭제
+    // promoteKey는 왼쪽 노드에서 제거
     leftMap->erase(promoteKey);
 
-    // 승격키의 오른쪽 child를 rightIndex의 mostLeftChild로 설정
-    rightIndex->setMostLeftChild(vec[midIdx + 1].second);
-
+    // 부모 처리
     BpTreeNode *parent = pIndexNode->getParent();
     if (!parent)
     {
+        // 새 루트 생성
         BpTreeIndexNode *newRoot = new BpTreeIndexNode();
         newRoot->setMostLeftChild(pIndexNode);
         pIndexNode->setParent(newRoot);
@@ -218,90 +146,146 @@ void BpTree::splitIndexNode(BpTreeNode *pIndexNode)
     }
 }
 
+void BpTree::splitDataNode(BpTreeNode *pDataNode)
+{
+    if (!pDataNode)
+        return;
+    auto leftMap = pDataNode->getDataMap();
+    if (!leftMap)
+        return;
+
+    BpTreeDataNode *rightNode = new BpTreeDataNode();
+
+    int total = leftMap->size();
+    int moveCount = total / 2;
+    vector<pair<string, EmployeeData *>> temp;
+
+    for (auto it = leftMap->rbegin(); it != leftMap->rend() && (int)temp.size() < moveCount; ++it)
+        temp.push_back({it->first, it->second});
+
+    for (auto &kv : temp)
+    {
+        rightNode->insertDataMap(kv.first, kv.second);
+        leftMap->erase(kv.first);
+    }
+
+    // 리프 간 연결
+    rightNode->setNext(pDataNode->getNext());
+    if (pDataNode->getNext())
+        pDataNode->getNext()->setPrev(rightNode);
+    rightNode->setPrev(pDataNode);
+    pDataNode->setNext(rightNode);
+
+    // 승격 키 = 오른쪽 리프의 첫 번째 키
+    string promoteKey = rightNode->getDataMap()->begin()->first;
+
+    BpTreeNode *parent = pDataNode->getParent();
+    if (!parent)
+    {
+        BpTreeIndexNode *newRoot = new BpTreeIndexNode();
+        newRoot->setMostLeftChild(pDataNode);
+        newRoot->insertIndexMap(promoteKey, rightNode);
+        pDataNode->setParent(newRoot);
+        rightNode->setParent(newRoot);
+        root = newRoot;
+    }
+    else
+    {
+        // ✅ 기존 부모에 승격키 추가 (오른쪽 구간을 rightNode로 연결)
+        parent->insertIndexMap(promoteKey, rightNode);
+        rightNode->setParent(parent);
+
+        // ✅ 혹시 부모의 가장 왼쪽 child였을 경우 갱신 필요
+        // (즉, pDataNode가 parent's mostLeftChild였을 때)
+        if (parent->getMostLeftChild() == pDataNode)
+            parent->setMostLeftChild(pDataNode);
+
+        if (excessIndexNode(parent))
+            splitIndexNode(parent);
+    }
+}
+
 BpTreeNode *BpTree::searchDataNode(string name)
 {
-    // 빈 트리면 nullptr
     if (!root)
-    {
         return nullptr;
-    }
 
     BpTreeNode *cur = root;
 
     while (cur)
     {
-        // 인덱스 노드인지 확인
         auto idxMap = cur->getIndexMap();
         if (idxMap)
         {
-            // name보다 큰 첫 키
-            auto it = idxMap->upper_bound(name);
-            if (it == idxMap->begin())
+
+            auto it = idxMap->lower_bound(name);
+
+            if (it == idxMap->end())
             {
-                // 가장 왼쪽 자식으로
-                cur = cur->getMostLeftChild();
+                // name이 모든 키보다 클 때: 마지막 키의 child로
+                auto last = std::prev(idxMap->end());
+
+                cur = last->second;
+            }
+            else if (it->first == name)
+            {
+                // 정확히 일치: 그 키의 child로
+
+                cur = it->second;
             }
             else
             {
-                // 바로 이전 키의 child로
-                it--;
-                cur = it->second;
+                // it->first > name
+                if (it == idxMap->begin())
+                {
+                    // name이 가장 작은 키보다 작을 때: mostLeftChild로
+
+                    cur = cur->getMostLeftChild();
+                }
+                else
+                {
+                    // name보다 바로 작은 키의 child로
+                    auto prev = std::prev(it);
+
+                    cur = prev->second;
+                }
             }
         }
         else
         {
-            // 리프 노드 도착
+
             return cur;
         }
     }
+
     return nullptr;
 }
 
-void BpTree::searchRange(string start, string end)
+vector<EmployeeData *> BpTree::searchRange(string start, string end)
 {
+    vector<EmployeeData *> result;
     if (!root)
-        return;
+        return result;
 
-    // ① start가 포함된 리프 노드 탐색
     BpTreeNode *cur = searchDataNode(start);
     if (!cur)
-        return;
+        return result;
 
-    bool found = false;
-
-    // ② 리프를 오른쪽으로 순회 (next 포인터 이용)
     while (cur)
     {
         auto dataMap = cur->getDataMap();
         if (!dataMap)
-            break; // 혹시 인덱스 노드일 경우 방어
+            break;
 
-        // ③ 현재 리프의 모든 데이터 확인
-        for (auto it = dataMap->begin(); it != dataMap->end(); ++it)
+        for (auto &kv : *dataMap)
         {
-            string name = it->first;
+            string name = kv.first;
             if (name >= start && name <= end)
-            {
-                found = true;
-                EmployeeData *data = it->second;
-                cout << "name: " << data->getName()
-                     << ", dept_no: " << data->getDeptNo()
-                     << ", ID: " << data->getID()
-                     << ", Income: " << data->getIncome() << endl;
-            }
+                result.push_back(kv.second);
             else if (name > end)
-            {
-                // end를 넘어서면 탐색 종료
-                return;
-            }
+                return result;
         }
-
-        // ④ 다음 리프 노드로 이동
         cur = cur->getNext();
     }
-
-    if (!found)
-    {
-        cout << "No data in range [" << start << ", " << end << "]" << endl;
-    }
+    return result;
 }
