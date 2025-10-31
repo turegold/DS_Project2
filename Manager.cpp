@@ -225,31 +225,27 @@ void Manager::ADD_ST_DEPTNO(int dept_no)
 	}
 
 	bool found = false;
-	cout << "\n[DEBUG] ADD_ST_DEPTNO(" << dept_no << ") 시작\n";
 
 	int leafIndex = 0;
 
 	// 리프 순회
 	while (cur)
 	{
-		cout << "[DEBUG] 리프 " << leafIndex++ << " 순회 중...\n";
+
 		auto dataMap = cur->getDataMap();
 		if (!dataMap)
 		{
-			cout << "[DEBUG] dataMap이 nullptr입니다. 중단.\n";
+
 			break;
 		}
 
 		for (auto &kv : *dataMap)
 		{
 			EmployeeData *data = kv.second;
-			cout << "    [TRACE] " << data->getName()
-				 << " (dept=" << data->getDeptNo() << ")\n";
 
 			if (data->getDeptNo() == dept_no)
 			{
-				cout << "    [MATCH] → SelectionTree에 삽입: "
-					 << data->getName() << "\n";
+
 				stree->Insert(data);
 				found = true;
 			}
@@ -257,14 +253,8 @@ void Manager::ADD_ST_DEPTNO(int dept_no)
 
 		// 다음 리프 노드로 이동
 		BpTreeNode *nextNode = cur->getNext();
-		if (!nextNode)
-			cout << "[DEBUG] 다음 리프 없음 (끝)\n";
-		else
-			cout << "[DEBUG] 다음 리프 존재 → 이동\n";
 		cur = nextNode;
 	}
-
-	cout << "[DEBUG] ADD_ST_DEPTNO(" << dept_no << ") 종료\n\n";
 
 	if (!found)
 	{

@@ -25,13 +25,22 @@ EmployeeData *EmployeeHeap::Top()
 void EmployeeHeap::Delete()
 {
     if (IsEmpty())
+        return;
+
+    // 루트(최고 연봉자) 제거
+    if (datanum == 1)
     {
+        heapArr[1] = nullptr;
+        datanum = 0;
         return;
     }
 
     // 마지막 노드를 루트로 이동
     heapArr[1] = heapArr[datanum];
+    heapArr[datanum] = nullptr; // dangling pointer 방지
     datanum--;
+
+    // Heapify-down
     DownHeap(1);
 }
 

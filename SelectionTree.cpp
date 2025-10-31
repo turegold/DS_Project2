@@ -2,22 +2,42 @@
 
 void SelectionTree::setTree()
 {
-    // 이미 트리가 있으면 무시
-    if (root)
+    // 이미 루트가 있더라도 Winner Tree를 다시 구성하도록 변경
+    if (!root)
     {
-        return;
+        root = new SelectionTreeNode();
+        root->HeapInit();
     }
 
-    // 루트 노드 생성
-    root = new SelectionTreeNode();
+    EmployeeData *best = nullptr;
+    SelectionTreeNode *bestNode = nullptr;
 
-    // 루트의 힙 초기화
-    root->HeapInit();
-
-    // run[] 배열 초기화
+    // run[] 중 가장 높은 연봉자 찾기
     for (int i = 0; i < 8; i++)
     {
-        run[i] = nullptr;
+        if (run[i] && run[i]->getHeap() && !run[i]->getHeap()->IsEmpty())
+        {
+            EmployeeData *top = run[i]->getHeap()->Top();
+
+            if (!best || top->getIncome() > best->getIncome())
+            {
+                best = top;
+                bestNode = run[i];
+            }
+        }
+    }
+
+    // 루트에 최고 연봉자 설정
+    if (best)
+    {
+        root->setEmployeeData(best);
+        root->setHeap(bestNode->getHeap());
+    }
+    else
+    {
+        // 모든 run이 비었을 경우
+        root->setEmployeeData(nullptr);
+        root->setHeap(nullptr);
     }
 }
 
@@ -58,22 +78,24 @@ bool SelectionTree::Insert(EmployeeData *newData)
 
 bool SelectionTree::Delete()
 {
-    if (!root)
-    {
+    if (!root || !root->getHeap())
         return false;
-    }
 
-    // 루트의 Heap 가져오기
     EmployeeHeap *heap = root->getHeap();
-    if (!heap || heap->IsEmpty())
-    {
+    if (heap->IsEmpty())
         return false;
-    }
 
-    // 루트의 최고 연봉자 삭제
+    // 루트 힙에서 최고 연봉자 제거
     heap->Delete();
 
-    // 만약 힙이 비어있다면 run[]에서도 제거
+    // ✅ 여기서 새 top으로 갱신 (핵심)
+    if (!heap->IsEmpty())
+    {
+        EmployeeData *newTop = heap->Top();
+        root->setEmployeeData(newTop);
+    }
+
+    // 힙이 비면 run[]에서 제거
     for (int i = 0; i < 8; i++)
     {
         if (run[i] && run[i]->getHeap() == heap && heap->IsEmpty())
@@ -84,16 +106,13 @@ bool SelectionTree::Delete()
         }
     }
 
-    // Winner Tree 재구성
-    setTree();
-
-    // 각 run[i]가 존재하면 Top()으로 루트 비교 후 재정렬
+    // Winner Tree 재선정 (나머지 run 중 최고 연봉자 찾기)
     EmployeeData *best = nullptr;
     SelectionTreeNode *bestNode = nullptr;
 
     for (int i = 0; i < 8; i++)
     {
-        if (run[i] && !run[i]->getHeap()->IsEmpty())
+        if (run[i] && run[i]->getHeap() && !run[i]->getHeap()->IsEmpty())
         {
             EmployeeData *top = run[i]->getHeap()->Top();
             if (!best || top->getIncome() > best->getIncome())
@@ -104,14 +123,18 @@ bool SelectionTree::Delete()
         }
     }
 
-    // 루트 갱신
-    if (best)
+    if (bestNode)
     {
         root->setEmployeeData(best);
         root->setHeap(bestNode->getHeap());
+        return true;
     }
-
-    return true;
+    else
+    {
+        delete root;
+        root = nullptr;
+        return false;
+    }
 }
 
 bool SelectionTree::printEmployeeData(int dept_no)
