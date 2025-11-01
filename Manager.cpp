@@ -83,6 +83,26 @@ void Manager::run(const char *command)
 		{
 			DELETE();
 		}
+		else if (cmd == "EXIT")
+		{
+			if (bptree)
+			{
+				delete bptree;
+				bptree = nullptr;
+			}
+			if (stree)
+			{
+				delete stree;
+				stree = nullptr;
+			}
+
+			printSuccessCode("EXIT");
+			break;
+		}
+		else
+		{
+			printErrorCode(800);
+		}
 	}
 
 	fin.close();
@@ -99,7 +119,7 @@ void Manager::LOAD()
 
 	// 파일 열기
 	ifstream emp("employee.txt");
-	if (!fin.is_open())
+	if (!emp.is_open())
 	{
 		printErrorCode(100);
 		return;
@@ -271,7 +291,7 @@ void Manager::ADD_ST_NAME(string name)
 	if (!bptree->getRoot())
 	{
 
-		printErrorCode(700);
+		printErrorCode(500);
 		return;
 	}
 
@@ -290,7 +310,7 @@ void Manager::ADD_ST_NAME(string name)
 	if (!leaf)
 	{
 
-		printErrorCode(700);
+		printErrorCode(500);
 		return;
 	}
 
@@ -298,7 +318,7 @@ void Manager::ADD_ST_NAME(string name)
 	if (!dataMap)
 	{
 
-		printErrorCode(700);
+		printErrorCode(500);
 		return;
 	}
 
@@ -306,7 +326,7 @@ void Manager::ADD_ST_NAME(string name)
 	if (it == dataMap->end())
 	{
 
-		printErrorCode(700);
+		printErrorCode(500);
 		return;
 	}
 
@@ -320,7 +340,7 @@ void Manager::PRINT_BP()
 	// 트리가 비어있으면 에러
 	if (!bptree->getRoot())
 	{
-		printErrorCode(500);
+		printErrorCode(400);
 		return;
 	}
 
@@ -379,14 +399,14 @@ void Manager::DELETE()
 {
 	if (!stree || !stree->getRoot())
 	{
-		printErrorCode(900);
+		printErrorCode(700);
 		return;
 	}
 
 	bool success = stree->Delete();
 	if (!success)
 	{
-		printErrorCode(900);
+		printErrorCode(700);
 		return;
 	}
 
