@@ -1,5 +1,7 @@
 #pragma once
 #include <fstream>
+#include <algorithm>
+#include <vector>
 #include "SelectionTreeNode.h"
 
 class SelectionTree
@@ -32,13 +34,20 @@ public:
         root = nullptr;
     }
 
+    // Set the root node
     void setRoot(SelectionTreeNode *pN) { this->root = pN; }
+    // Get the root node
     SelectionTreeNode *getRoot() { return root; }
 
+    // Build the selection tree
     void setTree();
 
+    // Insert a new employee into the run
     bool Insert(EmployeeData *newData);
+    // Delete the top employee and reorganize the tree
     bool Delete();
+    // Print all employees in a given department in ascending order by name
     bool printEmployeeData(int dept_no);
+    // Access a specific run by index
     SelectionTreeNode *getRun(int index) { return run[index]; }
 };

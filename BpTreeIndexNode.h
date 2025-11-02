@@ -5,27 +5,31 @@
 #include "BpTreeNode.h"
 #include <map>
 
-class BpTreeIndexNode : public BpTreeNode {
+class BpTreeIndexNode : public BpTreeNode
+{
 private:
-	map <string, BpTreeNode*> mapIndex;
+	map<string, BpTreeNode *> mapIndex;
 
 public:
 	BpTreeIndexNode() {}
-	~BpTreeIndexNode() {
-
+	~BpTreeIndexNode()
+	{
 	}
 
-
-	void insertIndexMap(string name, BpTreeNode* pN) {
-		mapIndex.insert(map<string, BpTreeNode*>::value_type(name, pN));
+	// Insert a new pair into the index map
+	void insertIndexMap(string name, BpTreeNode *pN)
+	{
+		mapIndex.insert(map<string, BpTreeNode *>::value_type(name, pN));
 	}
 
-	void deleteMap(string name) {
+	// Delete a key from the index map
+	void deleteMap(string name)
+	{
 		mapIndex.erase(name);
 	}
 
-	map <string, BpTreeNode*>* getIndexMap() { return &mapIndex; }
-
+	// Return pointer to the index map
+	map<string, BpTreeNode *> *getIndexMap() { return &mapIndex; }
 };
 
 #endif

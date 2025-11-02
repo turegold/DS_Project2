@@ -1,8 +1,9 @@
 #include "SelectionTree.h"
 
+// Build or rebuild the winner tree
 void SelectionTree::setTree()
 {
-    // 이미 루트가 있더라도 Winner Tree를 다시 구성하도록 변경
+    // Initialize root if it doesn't exist
     if (!root)
     {
         root = new SelectionTreeNode();
@@ -12,7 +13,7 @@ void SelectionTree::setTree()
     EmployeeData *best = nullptr;
     SelectionTreeNode *bestNode = nullptr;
 
-    // run[] 중 가장 높은 연봉자 찾기
+    // Find the employee with the highest income among all runs
     for (int i = 0; i < 8; i++)
     {
         if (run[i] && run[i]->getHeap() && !run[i]->getHeap()->IsEmpty())
@@ -27,20 +28,21 @@ void SelectionTree::setTree()
         }
     }
 
-    // 루트에 최고 연봉자 설정
+    // Set the top employee as the root node
     if (best)
     {
         root->setEmployeeData(best);
         root->setHeap(bestNode->getHeap());
     }
+    // If all runs are empty, clear the root
     else
     {
-        // 모든 run이 비었을 경우
         root->setEmployeeData(nullptr);
         root->setHeap(nullptr);
     }
 }
 
+// Insert a new employee into the selection tree
 bool SelectionTree::Insert(EmployeeData *newData)
 {
     if (!newData)
@@ -48,7 +50,7 @@ bool SelectionTree::Insert(EmployeeData *newData)
 
     int dept = newData->getDeptNo();
 
-    // 이미 같은 부서번호의 run이 존재하면 해당 Heap에 추가
+    // If a run for the same department already exist, insert into its heap
     for (int i = 0; i < 8; i++)
     {
         if (run[i] && run[i]->getEmployeeData()->getDeptNo() == dept)
@@ -58,7 +60,7 @@ bool SelectionTree::Insert(EmployeeData *newData)
         }
     }
 
-    // 빈 슬롯(run)이 있으면 새 노드 생성
+    // If there is an empty slot, create a new run
     for (int i = 0; i < 8; i++)
     {
         if (run[i] == nullptr)
@@ -72,44 +74,42 @@ bool SelectionTree::Insert(EmployeeData *newData)
         }
     }
 
-    // run[]이 꽉 찬 경우
+    // All runs are full
     return false;
 }
 
+// Delete the top employee and reorganize the tree
 bool SelectionTree::Delete()
 {
-    if (!root || !root->getHeap())
+    if (!root)
         return false;
-
     EmployeeHeap *heap = root->getHeap();
-    if (heap->IsEmpty())
+    if (!heap || heap->IsEmpty())
         return false;
 
-    // 루트 힙에서 최고 연봉자 제거
+    // Remove the top employee from the root heap
     heap->Delete();
 
-    // ✅ 여기서 새 top으로 갱신 (핵심)
-    if (!heap->IsEmpty())
+    // If the heap becomes empty, remove the corresponding run
+    if (heap->IsEmpty())
     {
-        EmployeeData *newTop = heap->Top();
-        root->setEmployeeData(newTop);
-    }
-
-    // 힙이 비면 run[]에서 제거
-    for (int i = 0; i < 8; i++)
-    {
-        if (run[i] && run[i]->getHeap() == heap && heap->IsEmpty())
+        for (int i = 0; i < 8; i++)
         {
-            delete run[i];
-            run[i] = nullptr;
-            break;
+            if (run[i] && run[i]->getHeap() == heap)
+            {
+                delete run[i];
+                run[i] = nullptr;
+                break;
+            }
         }
     }
 
-    // Winner Tree 재선정 (나머지 run 중 최고 연봉자 찾기)
+    // Rebuild the root node
+    setTree();
+
+    // Find the new top employee across all remaining runs
     EmployeeData *best = nullptr;
     SelectionTreeNode *bestNode = nullptr;
-
     for (int i = 0; i < 8; i++)
     {
         if (run[i] && run[i]->getHeap() && !run[i]->getHeap()->IsEmpty())
@@ -123,20 +123,23 @@ bool SelectionTree::Delete()
         }
     }
 
+    // Update root or delete it if all runs are empty
     if (bestNode)
     {
         root->setEmployeeData(best);
         root->setHeap(bestNode->getHeap());
-        return true;
     }
     else
     {
         delete root;
         root = nullptr;
-        return false;
+        return true;
     }
+
+    return true;
 }
 
+// Print all employees in a given department in ascending order by name
 bool SelectionTree::printEmployeeData(int dept_no)
 {
     if (!fout)
@@ -145,6 +148,7 @@ bool SelectionTree::printEmployeeData(int dept_no)
 
     bool found = false;
 
+    // Search for the run that matches the given department number
     for (int i = 0; i < 8; i++)
     {
         if (!run[i] || !run[i]->getEmployeeData())
@@ -158,15 +162,19 @@ bool SelectionTree::printEmployeeData(int dept_no)
 
             out << "========PRINT_ST " << dept_no << "========\n";
 
-            // ① 힙에서 다 꺼내 임시 보관
-            std::vector<EmployeeData *> buf;
+            // Extract all employees from the heap into a temporary buffer
+            vector<EmployeeData *> buf;
             while (!heap->IsEmpty())
             {
                 buf.push_back(heap->Top());
                 heap->Delete();
             }
 
-            // ② 임시 버퍼로 출력
+            // Sort employees by name
+            sort(buf.begin(), buf.end(), [](EmployeeData *a, EmployeeData *b)
+                 { return a->getName() < b->getName(); });
+
+            // Print sorted results
             for (auto *e : buf)
             {
                 out << e->getName() << "/"
@@ -175,7 +183,7 @@ bool SelectionTree::printEmployeeData(int dept_no)
                     << e->getIncome() << "\n";
             }
 
-            // ③ 다시 힙에 되돌려 넣기 (원본 보존)
+            // Reinsert employees back into the heap
             for (auto *e : buf)
                 heap->Insert(e);
 
@@ -185,10 +193,11 @@ bool SelectionTree::printEmployeeData(int dept_no)
         }
     }
 
+    // If the department was not found, print an error
     if (!found)
     {
         out << "========ERROR========\n";
-        out << "400\n";
+        out << "600\n";
         out << "=====================\n\n";
         return false;
     }

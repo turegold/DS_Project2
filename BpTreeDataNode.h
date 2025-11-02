@@ -4,33 +4,45 @@
 
 #include "BpTreeNode.h"
 
-class BpTreeDataNode : public BpTreeNode {
+class BpTreeDataNode : public BpTreeNode
+{
 private:
-	map <string, EmployeeData*> mapData;
-	BpTreeNode* pNext;
-	BpTreeNode* pPrev;
+	map<string, EmployeeData *> mapData;
+	BpTreeNode *pNext;
+	BpTreeNode *pPrev;
+
 public:
-	BpTreeDataNode() {
+	BpTreeDataNode()
+	{
 		pNext = NULL;
 		pPrev = NULL;
 	}
-	~BpTreeDataNode() {
-
+	~BpTreeDataNode()
+	{
 	}
 
-	void setNext(BpTreeNode* pN) { pNext = pN; }
-	void setPrev(BpTreeNode* pN) { pPrev = pN; }
-	BpTreeNode* getNext() { return pNext; }
-	BpTreeNode* getPrev() { return pPrev; }
+	// Set the next data node
+	void setNext(BpTreeNode *pN) { pNext = pN; }
+	// Set the prev data node
+	void setPrev(BpTreeNode *pN) { pPrev = pN; }
+	// Get the next data node
+	BpTreeNode *getNext() { return pNext; }
+	// Get the prev data node
+	BpTreeNode *getPrev() { return pPrev; }
 
-	void insertDataMap(string name, EmployeeData* pN) {
-		mapData.insert(map<string, EmployeeData*>::value_type(name, pN));
+	// Insert a new data into the data map
+	void insertDataMap(string name, EmployeeData *pN)
+	{
+		mapData.insert(map<string, EmployeeData *>::value_type(name, pN));
 	}
 
-	void deleteMap(string name) {
+	// Delete a record by name
+	void deleteMap(string name)
+	{
 		mapData.erase(name);
 	}
-	map<string, EmployeeData*>* getDataMap() { return &mapData; }
+	// Return pointer to the data map
+	map<string, EmployeeData *> *getDataMap() { return &mapData; }
 };
 
 #endif

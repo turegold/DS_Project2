@@ -1,18 +1,21 @@
 #pragma once
 #include "EmployeeHeap.h"
 
+// Insert a new employee into the heap
 void EmployeeHeap::Insert(EmployeeData *data)
 {
-    // 용량 초과 시 배열 크기 확장
+    // Expand heap size if capacity is exceeded
     if (datanum + 1 >= maxCapacity)
     {
         ResizeArray();
     }
+    // Add the new element at the end and restore heap order
     datanum++;
     heapArr[datanum] = data;
     UpHeap(datanum);
 }
 
+// Return the top employee
 EmployeeData *EmployeeHeap::Top()
 {
     if (IsEmpty())
@@ -22,12 +25,13 @@ EmployeeData *EmployeeHeap::Top()
     return heapArr[1];
 }
 
+// Remove the top employee from the heap
 void EmployeeHeap::Delete()
 {
     if (IsEmpty())
         return;
 
-    // 루트(최고 연봉자) 제거
+    // Only one element in the heap
     if (datanum == 1)
     {
         heapArr[1] = nullptr;
@@ -35,15 +39,16 @@ void EmployeeHeap::Delete()
         return;
     }
 
-    // 마지막 노드를 루트로 이동
+    // Move the last element to the root and heapify down
     heapArr[1] = heapArr[datanum];
-    heapArr[datanum] = nullptr; // dangling pointer 방지
+    heapArr[datanum] = nullptr;
     datanum--;
 
-    // Heapify-down
+    // Restore max-heap
     DownHeap(1);
 }
 
+// Check if the heap is empty
 bool EmployeeHeap::IsEmpty()
 {
     if (datanum == 0)
@@ -56,15 +61,17 @@ bool EmployeeHeap::IsEmpty()
     }
 }
 
+// Move an element upward to maintain max-heap
 void EmployeeHeap::UpHeap(int index)
 {
-    // 루트일 경우
+    // If node is root, stop
     if (index == 1)
     {
         return;
     }
 
     int parent = index / 2;
+    // Swap if the current node has higher income than its parent
     if (heapArr[index]->getIncome() > heapArr[parent]->getIncome())
     {
         swap(heapArr[index], heapArr[parent]);
@@ -72,17 +79,20 @@ void EmployeeHeap::UpHeap(int index)
     }
 }
 
+// Move an element downward to maintain max-heap
 void EmployeeHeap::DownHeap(int index)
 {
     int left = 2 * index;
     int right = 2 * index + 1;
     int largest = index;
 
+    // Compare with left and right children to find the largest income
     if (left <= datanum && heapArr[left]->getIncome() > heapArr[largest]->getIncome())
         largest = left;
     if (right <= datanum && heapArr[right]->getIncome() > heapArr[largest]->getIncome())
         largest = right;
 
+    // If a child is larger, swap and continue downheap
     if (largest != index)
     {
         swap(heapArr[index], heapArr[largest]);
@@ -90,14 +100,16 @@ void EmployeeHeap::DownHeap(int index)
     }
 }
 
+// Double the array size when the heap capacity is exceeded
 void EmployeeHeap::ResizeArray()
 {
     int newCapacity = maxCapacity * 2;
-    EmployeeData **newArr = new EmployeeData *[newCapacity + 1]; // index 1부터 사용
+    EmployeeData **newArr = new EmployeeData *[newCapacity + 1];
 
     for (int i = 1; i <= datanum; i++)
         newArr[i] = heapArr[i];
 
+    // Replace old array with new one
     delete[] heapArr;
     heapArr = newArr;
     maxCapacity = newCapacity;
