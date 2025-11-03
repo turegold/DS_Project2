@@ -249,7 +249,7 @@ void Manager::SEARCH_BP_RANGE(string start, string end)
 	auto results = bptree->searchRange(start, end);
 	if (results.empty())
 	{
-		printErrorCode(400);
+		printErrorCode(300);
 		return;
 	}
 
