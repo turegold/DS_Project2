@@ -1,6 +1,7 @@
 #pragma once
 #include "SelectionTree.h"
 #include "BpTree.h"
+#include <limits>
 #include <fstream>
 #include <sstream>
 class Manager
