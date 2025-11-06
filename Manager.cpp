@@ -102,7 +102,7 @@ void Manager::run(const char *command)
 		{
 			int dept;
 			if (!(fin >> dept))
-			{ // 인자 누락/형식 오류
+			{
 				printErrorCode(600);
 			}
 			else
@@ -291,8 +291,6 @@ void Manager::ADD_ST_DEPTNO(int dept_no)
 
 	bool found = false;
 
-	int leafIndex = 0;
-
 	// Traverse all leaf nodes from left to right
 	while (cur)
 	{
@@ -305,9 +303,9 @@ void Manager::ADD_ST_DEPTNO(int dept_no)
 		}
 
 		// check each employee in the current leaf
-		for (auto &kv : *dataMap)
+		for (auto &cur_leaf : *dataMap)
 		{
-			EmployeeData *data = kv.second;
+			EmployeeData *data = cur_leaf.second;
 
 			// Insert employees with matching dept_no
 			if (data->getDeptNo() == dept_no)
@@ -349,8 +347,6 @@ void Manager::ADD_ST_NAME(string name)
 	}
 	stree->setTree();
 
-	name.erase(name.find_last_not_of(" \n\r\t") + 1);
-
 	// Find the employee in the B+ Tree by name
 	BpTreeNode *leaf = bptree->searchDataNode(name);
 	if (!leaf)
@@ -367,8 +363,8 @@ void Manager::ADD_ST_NAME(string name)
 		return;
 	}
 
-	auto it = dataMap->find(name);
-	if (it == dataMap->end())
+	auto cur_iter = dataMap->find(name);
+	if (cur_iter == dataMap->end())
 	{
 
 		printErrorCode(500);
@@ -376,7 +372,7 @@ void Manager::ADD_ST_NAME(string name)
 	}
 
 	// Insert the found employee into Selection Tree
-	stree->Insert(it->second);
+	stree->Insert(cur_iter->second);
 
 	printSuccessCode("ADD_ST");
 }

@@ -88,9 +88,13 @@ void EmployeeHeap::DownHeap(int index)
 
     // Compare with left and right children to find the largest income
     if (left <= datanum && heapArr[left]->getIncome() > heapArr[largest]->getIncome())
+    {
         largest = left;
+    }
     if (right <= datanum && heapArr[right]->getIncome() > heapArr[largest]->getIncome())
+    {
         largest = right;
+    }
 
     // If a child is larger, swap and continue downheap
     if (largest != index)

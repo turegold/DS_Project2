@@ -10,8 +10,8 @@ void SelectionTree::setTree()
         root->HeapInit();
     }
 
-    EmployeeData *best = nullptr;
-    SelectionTreeNode *bestNode = nullptr;
+    EmployeeData *highest_salary = nullptr;
+    SelectionTreeNode *highest_salary_Node = nullptr;
 
     // Find the employee with the highest income among all runs
     for (int i = 0; i < 8; i++)
@@ -20,19 +20,19 @@ void SelectionTree::setTree()
         {
             EmployeeData *top = run[i]->getHeap()->Top();
 
-            if (!best || top->getIncome() > best->getIncome())
+            if (!highest_salary || top->getIncome() > highest_salary->getIncome())
             {
-                best = top;
-                bestNode = run[i];
+                highest_salary = top;
+                highest_salary_Node = run[i];
             }
         }
     }
 
     // Set the top employee as the root node
-    if (best)
+    if (highest_salary)
     {
-        root->setEmployeeData(best);
-        root->setHeap(bestNode->getHeap());
+        root->setEmployeeData(highest_salary);
+        root->setHeap(highest_salary_Node->getHeap());
     }
     // If all runs are empty, clear the root
     else
@@ -48,12 +48,12 @@ bool SelectionTree::Insert(EmployeeData *newData)
     if (!newData)
         return false;
 
-    int dept = newData->getDeptNo();
+    int deptNo = newData->getDeptNo();
 
     // If a run for the same department already exist, insert into its heap
     for (int i = 0; i < 8; i++)
     {
-        if (run[i] && run[i]->getEmployeeData()->getDeptNo() == dept)
+        if (run[i] && run[i]->getEmployeeData()->getDeptNo() == deptNo)
         {
             run[i]->getHeap()->Insert(newData);
             return true;
@@ -108,26 +108,26 @@ bool SelectionTree::Delete()
     setTree();
 
     // Find the new top employee across all remaining runs
-    EmployeeData *best = nullptr;
-    SelectionTreeNode *bestNode = nullptr;
+    EmployeeData *highest_salary = nullptr;
+    SelectionTreeNode *highest_salary_Node = nullptr;
     for (int i = 0; i < 8; i++)
     {
         if (run[i] && run[i]->getHeap() && !run[i]->getHeap()->IsEmpty())
         {
             EmployeeData *top = run[i]->getHeap()->Top();
-            if (!best || top->getIncome() > best->getIncome())
+            if (!highest_salary || top->getIncome() > highest_salary->getIncome())
             {
-                best = top;
-                bestNode = run[i];
+                highest_salary = top;
+                highest_salary_Node = run[i];
             }
         }
     }
 
     // Update root or delete it if all runs are empty
-    if (bestNode)
+    if (highest_salary_Node)
     {
-        root->setEmployeeData(best);
-        root->setHeap(bestNode->getHeap());
+        root->setEmployeeData(highest_salary);
+        root->setHeap(highest_salary_Node->getHeap());
     }
     else
     {
@@ -139,12 +139,11 @@ bool SelectionTree::Delete()
     return true;
 }
 
-// Print all employees in a given department in ascending order by name
+// Print all employees in a given department in descending order by income
 bool SelectionTree::printEmployeeData(int dept_no)
 {
     if (!fout)
         return false;
-    std::ostream &out = *fout;
 
     bool found = false;
 
@@ -160,34 +159,30 @@ bool SelectionTree::printEmployeeData(int dept_no)
             if (!heap || heap->IsEmpty())
                 return false;
 
-            out << "========PRINT_ST " << dept_no << "========\n";
+            (*fout) << "========PRINT_ST " << dept_no << "========\n";
 
             // Extract all employees from the heap into a temporary buffer
-            vector<EmployeeData *> buf;
+            vector<EmployeeData *> temp;
             while (!heap->IsEmpty())
             {
-                buf.push_back(heap->Top());
+                temp.push_back(heap->Top());
                 heap->Delete();
             }
 
-            // Sort employees by name
-            sort(buf.begin(), buf.end(), [](EmployeeData *a, EmployeeData *b)
-                 { return a->getName() < b->getName(); });
-
             // Print sorted results
-            for (auto *e : buf)
+            for (auto *cur : temp)
             {
-                out << e->getName() << "/"
-                    << e->getDeptNo() << "/"
-                    << e->getID() << "/"
-                    << e->getIncome() << "\n";
+                (*fout) << cur->getName() << "/"
+                        << cur->getDeptNo() << "/"
+                        << cur->getID() << "/"
+                        << cur->getIncome() << "\n";
             }
 
             // Reinsert employees back into the heap
-            for (auto *e : buf)
-                heap->Insert(e);
+            for (auto *cur : temp)
+                heap->Insert(cur);
 
-            out << "=========================\n\n";
+            (*fout) << "=========================\n\n";
             found = true;
             break;
         }
@@ -196,10 +191,11 @@ bool SelectionTree::printEmployeeData(int dept_no)
     // If the department was not found, print an error
     if (!found)
     {
-        out << "========ERROR========\n";
-        out << "600\n";
-        out << "=====================\n\n";
+        (*fout) << "========ERROR========\n";
+        (*fout) << "600\n";
+        (*fout) << "=====================\n\n";
         return false;
     }
+
     return true;
 }

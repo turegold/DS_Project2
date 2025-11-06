@@ -27,11 +27,11 @@ bool BpTree::Insert(EmployeeData *newData)
     }
 
     // If a record with the same name already exists, update income
-    auto dataMap = pLeaf->getDataMap();
-    auto it = dataMap->find(key);
-    if (it != dataMap->end())
+    auto cur_dataMap = pLeaf->getDataMap();
+    auto cur_iter = cur_dataMap->find(key);
+    if (cur_iter != cur_dataMap->end())
     {
-        it->second->setIncome(newData->getIncome());
+        cur_iter->second->setIncome(newData->getIncome());
         return true;
     }
 
@@ -55,14 +55,15 @@ bool BpTree::excessDataNode(BpTreeNode *pDataNode)
         return false;
     }
 
-    auto dataMap = pDataNode->getDataMap();
-    if (!dataMap)
+    auto cur_dataMap = pDataNode->getDataMap();
+    if (!cur_dataMap)
     {
         return false;
     }
 
+    int limit_size = (int)cur_dataMap->size();
     // return true if number of keys > (order - 1)
-    if ((int)dataMap->size() > (order - 1))
+    if (limit_size > (order - 1))
     {
         return true;
     }
@@ -86,8 +87,9 @@ bool BpTree::excessIndexNode(BpTreeNode *pIndexNode)
         return false;
     }
 
+    int limit_size = (int)indexMap->size();
     // Return true if number of keys > (order - 1)
-    if ((int)indexMap->size() > (order - 1))
+    if (limit_size > (order - 1))
     {
         return true;
     }
@@ -101,11 +103,15 @@ bool BpTree::excessIndexNode(BpTreeNode *pIndexNode)
 void BpTree::splitIndexNode(BpTreeNode *pIndexNode)
 {
     if (!pIndexNode)
+    {
         return;
+    }
 
     auto leftMap = pIndexNode->getIndexMap();
     if (!leftMap)
+    {
         return;
+    }
 
     BpTreeIndexNode *rightIndex = new BpTreeIndexNode();
 
@@ -147,7 +153,9 @@ void BpTree::splitIndexNode(BpTreeNode *pIndexNode)
         parent->insertIndexMap(promoteKey, rightIndex);
         rightIndex->setParent(parent);
         if (excessIndexNode(parent))
+        {
             splitIndexNode(parent);
+        }
     }
 }
 
@@ -155,10 +163,14 @@ void BpTree::splitIndexNode(BpTreeNode *pIndexNode)
 void BpTree::splitDataNode(BpTreeNode *pDataNode)
 {
     if (!pDataNode)
+    {
         return;
+    }
     auto leftMap = pDataNode->getDataMap();
     if (!leftMap)
+    {
         return;
+    }
 
     BpTreeDataNode *rightNode = new BpTreeDataNode();
 
@@ -167,19 +179,23 @@ void BpTree::splitDataNode(BpTreeNode *pDataNode)
     vector<pair<string, EmployeeData *>> temp;
 
     // Move the last half of the keys to the right node
-    for (auto it = leftMap->rbegin(); it != leftMap->rend() && (int)temp.size() < moveCount; ++it)
-        temp.push_back({it->first, it->second});
-
-    for (auto &kv : temp)
+    for (auto cur_iter = leftMap->rbegin(); cur_iter != leftMap->rend() && (int)temp.size() < moveCount; ++cur_iter)
     {
-        rightNode->insertDataMap(kv.first, kv.second);
-        leftMap->erase(kv.first);
+        temp.push_back({cur_iter->first, cur_iter->second});
+    }
+
+    for (auto &t : temp)
+    {
+        rightNode->insertDataMap(t.first, t.second);
+        leftMap->erase(t.first);
     }
 
     // Connect leaf nodes in sequence
     rightNode->setNext(pDataNode->getNext());
     if (pDataNode->getNext())
+    {
         pDataNode->getNext()->setPrev(rightNode);
+    }
     rightNode->setPrev(pDataNode);
     pDataNode->setNext(rightNode);
 
@@ -205,10 +221,14 @@ void BpTree::splitDataNode(BpTreeNode *pDataNode)
 
         // Update mostLeftChild if necessary
         if (parent->getMostLeftChild() == pDataNode)
+        {
             parent->setMostLeftChild(pDataNode);
+        }
 
         if (excessIndexNode(parent))
+        {
             splitIndexNode(parent);
+        }
     }
 }
 
@@ -216,8 +236,9 @@ void BpTree::splitDataNode(BpTreeNode *pDataNode)
 BpTreeNode *BpTree::searchDataNode(string name)
 {
     if (!root)
+    {
         return nullptr;
-
+    }
     BpTreeNode *cur = root;
 
     while (cur)
@@ -226,31 +247,31 @@ BpTreeNode *BpTree::searchDataNode(string name)
         if (idxMap)
         {
 
-            auto it = idxMap->lower_bound(name);
+            auto cur_iter = idxMap->lower_bound(name);
 
             // If name is gerater than all keys, move to the last child
-            if (it == idxMap->end())
+            if (cur_iter == idxMap->end())
             {
                 auto last = std::prev(idxMap->end());
 
                 cur = last->second;
             }
             // If matched exactly, move to the corresponding child
-            else if (it->first == name)
+            else if (cur_iter->first == name)
             {
-                cur = it->second;
+                cur = cur_iter->second;
             }
             // If name is smaller than all keys, go to mostLeftChild
             else
             {
-                if (it == idxMap->begin())
+                if (cur_iter == idxMap->begin())
                 {
                     cur = cur->getMostLeftChild();
                 }
                 // Move to the child fo the previous key
                 else
                 {
-                    auto prev = std::prev(it);
+                    auto prev = std::prev(cur_iter);
                     cur = prev->second;
                 }
             }
@@ -270,26 +291,34 @@ vector<EmployeeData *> BpTree::searchRange(string start, string end)
 {
     vector<EmployeeData *> result;
     if (!root)
+    {
         return result;
+    }
 
     BpTreeNode *cur = searchDataNode(start);
     if (!cur)
+    {
         return result;
+    }
 
     // Traverse leaf nodes sequentially
     while (cur)
     {
-        auto dataMap = cur->getDataMap();
-        if (!dataMap)
+        auto cur_dataMap = cur->getDataMap();
+        if (!cur_dataMap)
             break;
 
-        for (auto &kv : *dataMap)
+        for (auto &t : *cur_dataMap)
         {
-            string name = kv.first;
+            string name = t.first;
             if (name >= start && name <= end)
-                result.push_back(kv.second);
+            {
+                result.push_back(t.second);
+            }
             else if (name > end)
+            {
                 return result;
+            }
         }
         // Move to the next leaf node
         cur = cur->getNext();
