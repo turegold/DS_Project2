@@ -82,7 +82,9 @@ bool SelectionTree::Insert(EmployeeData *newData)
 bool SelectionTree::Delete()
 {
     if (!root)
+    {
         return false;
+    }
     EmployeeHeap *heap = root->getHeap();
     if (!heap || heap->IsEmpty())
         return false;
@@ -133,7 +135,6 @@ bool SelectionTree::Delete()
     {
         delete root;
         root = nullptr;
-        return true;
     }
 
     return true;

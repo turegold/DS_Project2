@@ -279,9 +279,6 @@ void Manager::ADD_ST_DEPTNO(int dept_no)
 		stree = new SelectionTree(&flog);
 	}
 
-	// Set tree
-	stree->setTree();
-
 	// Move mostLeftChild
 	BpTreeNode *cur = bptree->getRoot();
 	while (cur->getMostLeftChild())
@@ -320,6 +317,9 @@ void Manager::ADD_ST_DEPTNO(int dept_no)
 		cur = nextNode;
 	}
 
+	// Set tree
+	stree->setTree();
+
 	if (!found)
 	{
 		printErrorCode(500);
@@ -345,7 +345,6 @@ void Manager::ADD_ST_NAME(string name)
 
 		stree = new SelectionTree(&flog);
 	}
-	stree->setTree();
 
 	// Find the employee in the B+ Tree by name
 	BpTreeNode *leaf = bptree->searchDataNode(name);
@@ -373,6 +372,7 @@ void Manager::ADD_ST_NAME(string name)
 
 	// Insert the found employee into Selection Tree
 	stree->Insert(cur_iter->second);
+	stree->setTree();
 
 	printSuccessCode("ADD_ST");
 }
