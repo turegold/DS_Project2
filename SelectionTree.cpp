@@ -46,9 +46,27 @@ void SelectionTree::setTree()
 bool SelectionTree::Insert(EmployeeData *newData)
 {
     if (!newData)
+    {
         return false;
+    }
 
     int deptNo = newData->getDeptNo();
+
+    // Check duplication
+    for (int i = 0; i < 8; i++)
+    {
+        if (run[i] && run[i]->getHeap())
+        {
+            EmployeeHeap *heap = run[i]->getHeap();
+            for (int j = 1; j <= heap->getSize(); j++)
+            {
+                if (heap->getEmployee(j)->getID() == newData->getID())
+                {
+                    return false;
+                }
+            }
+        }
+    }
 
     // If a run for the same department already exist, insert into its heap
     for (int i = 0; i < 8; i++)

@@ -36,4 +36,15 @@ public:
     void DownHeap(int index);
     // Resize the heap array when capacity is exceeded
     void ResizeArray();
+
+    // Getter
+    int getSize() { return datanum; }
+    EmployeeData *getEmployee(int index)
+    {
+        if (index < 1 || index > datanum)
+        {
+            return nullptr;
+        }
+        return heapArr[index];
+    }
 };
