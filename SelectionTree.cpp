@@ -58,9 +58,12 @@ bool SelectionTree::Insert(EmployeeData *newData)
         if (run[i] && run[i]->getHeap())
         {
             EmployeeHeap *heap = run[i]->getHeap();
-            for (int j = 1; j <= heap->getSize(); j++)
+            int heapSize = heap->getSize();
+
+            for (int j = 1; j <= heapSize; j++)
             {
-                if (heap->getEmployee(j)->getID() == newData->getID())
+                EmployeeData *existing = heap->getEmployee(j);
+                if (existing && existing->getID() == newData->getID())
                 {
                     return false;
                 }
