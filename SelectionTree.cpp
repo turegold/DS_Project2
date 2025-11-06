@@ -181,7 +181,7 @@ bool SelectionTree::printEmployeeData(int dept_no)
             if (!heap || heap->IsEmpty())
                 return false;
 
-            (*fout) << "========PRINT_ST " << dept_no << "========\n";
+            (*fout) << "========PRINT_ST========\n";
 
             // Extract all employees from the heap into a temporary buffer
             vector<EmployeeData *> temp;
